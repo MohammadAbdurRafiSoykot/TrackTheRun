@@ -1,3 +1,5 @@
+let watchId = null;
+
 document.addEventListener("DOMContentLoaded", async () => {
   // iOS 13+ requires a user gesture to allow motion sensors
   const askIOSPermission = async () => {
@@ -13,6 +15,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const stopBtn  = document.getElementById("stopBtn");
 
   // Leaflet map
+  if (marker) { map.removeLayer(marker); marker = null; }
+path.setLatLngs([]); // clear previous polyline
   const map = L.map("map");
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap"
