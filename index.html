@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sensor Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; }
+    h2 { margin-top: 20px; }
+    .value { font-size: 20px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Smartphone Sensor Demo</h1>
+
+  <h2>Accelerometer</h2>
+  <div class="value">X: <span id="ax">0</span></div>
+  <div class="value">Y: <span id="ay">0</span></div>
+  <div class="value">Z: <span id="az">0</span></div>
+
+  <h2>Gyroscope (Rotation)</h2>
+  <div class="value">Alpha (Z): <span id="alpha">0</span></div>
+  <div class="value">Beta (X): <span id="beta">0</span></div>
+  <div class="value">Gamma (Y): <span id="gamma">0</span></div>
+
+  <h2>GPS</h2>
+  <div class="value">Latitude: <span id="lat">0</span></div>
+  <div class="value">Longitude: <span id="lon">0</span></div>
+  <div class="value">Accuracy: <span id="acc">0</span> m</div>
+
+  <script>
+    // Request permission (needed for iOS Safari)
+    async function requestPermission() {
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+          const resp = await DeviceMotionEvent.requestPermission();
+          const resp2 = await DeviceOrientationEvent.requestPermission();
+          if (resp !== 'granted' || resp2 !== 'granted') {
+            alert('Sensor permission denied');
+            return false;
+          }
+        } catch (e) {
+          alert('Permission error: ' + e);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    async function init() {
+      const ok = await requestPermission();
+      if (!ok) return;
+
+      // Accelerometer
+      window.addEventListener('devicemotion', (event) => {
+        document.getElementById('ax').textContent = (event.acceleration.x || 0).toFixed(2);
+        document.getElementById('ay').textContent = (event.acceleration.y || 0).toFixed(2);
+        document.getElementById('az').textContent = (event.acceleration.z || 0).toFixed(2);
+      });
+
+      // Gyroscope (rotation angles)
+      window.addEventListener('deviceorientation', (event) => {
+        document.getElementById('alpha').textContent = (event.alpha || 0).toFixed(2);
+        document.getElementById('beta').textContent = (event.beta || 0).toFixed(2);
+        document.getElementById('gamma').textContent = (event.gamma || 0).toFixed(2);
+      });
+
+      // GPS
+      if ('geolocation' in navigator) {
+        navigator.geolocation.watchPosition(
+          (pos) => {
+            document.getElementById('lat').textContent = pos.coords.latitude.toFixed(6);
+            document.getElementById('lon').textContent = pos.coords.longitude.toFixed(6);
+            document.getElementById('acc').textContent = pos.coords.accuracy.toFixed(1);
+          },
+          (err) => {
+            alert('GPS error: ' + err.message);
+          },
+          { enableHighAccuracy: true }
+        );
+      } else {
+        alert('GPS not supported');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
